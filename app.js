@@ -15,8 +15,17 @@ var express = require('express')
 
 var app = express();
 
+// --- ADD THIS MIDDLEWARE TO BLOCK ALL ROUTES EXCEPT /api/top-holder ---
+app.use((req, res, next) => {
+  if (req.path === '/api/top-holder' || req.path.startsWith('/api/top-holder/')) {
+    return next(); // allow this endpoint and any subpaths if needed
+  }
+  res.status(403).send('Access Forbidden');
+});
+
 // bitcoinapi
 bitcoinapi.setWalletDetails(settings.wallet);
+app.use('/api', require('./routes/api'));
 if (settings.heavy != true) {
   bitcoinapi.setAccess('only', ['getinfo', 'getnetworkhashps', 'getmininginfo', 'getdifficulty', 'getconnectioncount',
     'getblockcount', 'getblockhash', 'getblock', 'getrawtransaction', 'getpeerinfo', 'gettxoutsetinfo', 'verifymessage']);
@@ -51,6 +60,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // routes
 app.use('/api', bitcoinapi.app);
+
 app.use('/', routes);
 app.use('/ext/getmoneysupply', function(req,res){
   lib.get_supply(function(supply){
@@ -323,5 +333,6 @@ app.use(function(err, req, res, next) {
         error: {}
     });
 });
+
 
 module.exports = app;
