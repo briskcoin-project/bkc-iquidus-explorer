@@ -15,10 +15,19 @@ var express = require('express')
 
 var app = express();
 
-// --- ADD THIS MIDDLEWARE TO BLOCK ALL ROUTES EXCEPT /api/top-holder ---
+// --- UPDATED MIDDLEWARE TO ALLOW NEW ENDPOINTS ---
 app.use((req, res, next) => {
-  if (req.path === '/api/top-holder' || req.path.startsWith('/api/top-holder/')) {
-    return next(); // allow this endpoint and any subpaths if needed
+  const allowedPaths = [
+    '/api/top-holder',
+    '/api/gettotaladdresses',
+    '/api/getuniqueaddresses',
+    '/api/getaddressstats'
+  ];
+  // Check if the request path starts with any allowed path
+  const isAllowed = allowedPaths.some(path => req.path === path || req.path.startsWith(path + '/'));
+  
+  if (isAllowed) {
+    return next(); // allow access to approved endpoints
   }
   res.status(403).send('Access Forbidden');
 });
